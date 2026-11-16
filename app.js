@@ -10,7 +10,7 @@ let haikei = [];
 let grave = [];
 let drawPile = [];
 
-let turn = 1;
+let selectedCard = null;
 
 fetch('cards.json')
   .then(r => r.json())
@@ -208,74 +208,157 @@ function renderBoard() {
 
 // カードの移動先を選ぶ
 
+
 function cardAction(from, index) {
-  const zones = {
-    hand, field, guardian, mana, haikei, grave
-  };
+  selectedCard = { from, index };
+  renderCardMenu();
+}
 
-  const source = zones[from];
-  if (!source || !source[index]) return;
+function getZones() {
+  return { hand, field, guardian, mana, haikei, grave };
+}
 
-  const card = source[index];
+function renderCardMenu() {
+  if (!selectedCard) return;
 
-  const action = confirm(
-    card.name +
-    '\n\nOK：向きを変更\nキャンセル：次の操作へ'
-  );
+  const zones = getZones();
+  const source = zones[selectedCard.from];
+  const card = source?.[selectedCard.index];
 
-  if (action) {
-    card._tapped = !card._tapped;
-    renderBoard();
-    toast('カードの向きを変更したよ');
+  if (!card) {
+    closeCardMenu();
     return;
   }
 
-  const face = confirm(
-    '表向き・裏向きを変更する？\n\nOK：変更する\nキャンセル：移動する'
-  );
+  let menu = document.getElementById('cardMenu');
 
-  if (face) {
-    card._faceDown = !card._faceDown;
-    renderBoard();
-    toast('カードの表裏を変更したよ');
-    return;
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'cardMenu';
+    document.body.appendChild(menu);
   }
+
+  menu.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:#000a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  `;
+
+  menu.innerHTML = `
+    <div style="
+      background:#1b2a38;
+      color:white;
+      border:1px solid #526579;
+      border-radius:14px;
+      padding:20px;
+      width:100%;
+      max-width:360px;
+      box-sizing:border-box;
+    ">
+      <h3 style="margin-top:0;">${esc(card.name)}</h3>
+      <button id="tapButton" style="width:100%;padding:13px;margin:5px 0;">
+        ${card._tapped ? '縦向きにする' : '横向きにする'}
+      </button>
+      <button id="faceButton" style="width:100%;padding:13px;margin:5px 0;">
+        ${card._faceDown ? '表向きにする' : '裏向きにする'}
+      </button>
+      <button id="moveButton" style="width:100%;padding:13px;margin:5px 0;">
+        ゾーン移動
+      </button>
+      <button id="closeButton" style="width:100%;padding:13px;margin:5px 0;">
+        閉じる
+      </button>
+    </div>
+  `;
+
+  document.getElementById('tapButton').onclick = toggleCardTap;
+  document.getElementById('faceButton').onclick = toggleCardFace;
+  document.getElementById('moveButton').onclick = showMoveChoices;
+  document.getElementById('closeButton').onclick = closeCardMenu;
+}
+
+function toggleCardTap() {
+  const zones = getZones();
+  const card = zones[selectedCard.from][selectedCard.index];
+  card._tapped = !card._tapped;
+  renderBoard();
+  renderCardMenu();
+}
+
+function toggleCardFace() {
+  const zones = getZones();
+  const card = zones[selectedCard.from][selectedCard.index];
+  card._faceDown = !card._faceDown;
+  renderBoard();
+  renderCardMenu();
+}
+
+function showMoveChoices() {
+  const menu = document.getElementById('cardMenu');
 
   const destinations = [
-    ['1', '手札', 'hand'],
-    ['2', '戦場', 'field'],
-    ['3', 'ガーディアン', 'guardian'],
-    ['4', '魔力ゾーン', 'mana'],
-    ['5', 'ハイケイ置き場', 'haikei'],
-    ['6', '墓地', 'grave'],
-    ['7', '山札の上', 'drawPile']
+    ['hand', '手札'],
+    ['field', '戦場'],
+    ['guardian', 'ガーディアン'],
+    ['mana', '魔力ゾーン'],
+    ['haikei', 'ハイケイ置き場'],
+    ['grave', '墓地'],
+    ['drawPile', '山札の上']
   ];
 
-  const moveChoice = prompt(
-    destinations.map(x => x[0] + '：' + x[1]).join('\n')
-  );
+  menu.querySelector('div').innerHTML = `
+    <h3 style="margin-top:0;">移動先を選択</h3>
+    ${destinations.map(([id, name], i) =>
+      `<button data-zone="${id}" style="width:100%;padding:12px;margin:4px 0;">
+        ${name}
+      </button>`
+    ).join('')}
+    <button id="backButton" style="width:100%;padding:12px;margin-top:8px;">
+      戻る
+    </button>
+  `;
 
-  if (moveChoice === null) return;
+  menu.querySelectorAll('[data-zone]').forEach(button => {
+    button.onclick = () => moveSelectedCard(button.dataset.zone);
+  });
 
-  const destination = destinations.find(x => x[0] === moveChoice);
-  if (!destination) return;
+  document.getElementById('backButton').onclick = renderCardMenu;
+}
 
-  if (destination[2] === from) {
+function moveSelectedCard(destination) {
+  const zones = getZones();
+  const from = selectedCard.from;
+
+  if (destination === from) {
     toast('同じゾーンです');
     return;
   }
 
-  const movedCard = source.splice(index, 1)[0];
+  const source = zones[from];
+  const card = source.splice(selectedCard.index, 1)[0];
 
-  if (destination[2] === 'drawPile') {
-    drawPile.push(movedCard);
+  if (destination === 'drawPile') {
+    drawPile.push(card);
   } else {
-    zones[destination[2]].push(movedCard);
+    zones[destination].push(card);
   }
 
   renderBoard();
-  toast(movedCard.name + ' を' + destination[1] + 'へ移動');
+  closeCardMenu();
+  toast(card.name + ' を移動しました');
 }
+
+function closeCardMenu() {
+  const menu = document.getElementById('cardMenu');
+  if (menu) menu.remove();
+  selectedCard = null;
+}
+
 
 
 function createRoom() {
