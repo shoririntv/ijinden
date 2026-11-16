@@ -108,9 +108,16 @@ function clearDeck() {
 function startGame() {
   const saved = JSON.parse(localStorage.getItem('ijindenDeck') || '[]');
 
-  const selected = saved.map(n =>
-    cards.find(c => c.name === (typeof n === 'string' ? n : n.name))
-  ).filter(Boolean);
+  const selected = saved.map(n => {
+  const c = cards.find(x =>
+    x.name === (typeof n === 'string' ? n : n.name)
+  );
+  return c ? {
+    ...c,
+    _tapped: false,
+    _faceDown: false
+  } : null;
+}).filter(Boolean);
 
   if (!selected.length) {
     toast('保存デッキが空です。先にデッキを保存してね');
@@ -159,16 +166,31 @@ function turnEnd() {
 }
 
 // カードを各ゾーンに表示する
+
 function renderZone(zoneName, elementId, cardsInZone) {
   const element = document.getElementById(elementId);
 
-  element.innerHTML = cardsInZone.map((c, i) =>
-    `<div style="width:120px;cursor:pointer"
-      onclick="moveCard('${zoneName}',${i})">
-      ${cardHTML(c)}
-      <small style="color:var(--muted)">タップして移動</small>
-    </div>`
-  ).join('');
+  element.innerHTML = cardsInZone.map((c, i) => {
+    const cardView = c._faceDown
+      ? `<article class="card" style="background:#34485a;color:white;justify-content:center;align-items:center">
+           <b>イジンデン</b>
+           <small>裏向き</small>
+         </article>`
+      : cardHTML(c);
+
+    return `
+      <div style="
+        width:120px;
+        cursor:pointer;
+        transform:rotate(${c._tapped ? 90 : 0}deg);
+        transform-origin:center;
+        margin:8px;
+      " onclick="cardAction('${zoneName}',${i})">
+        ${cardView}
+        <small style="color:var(--muted)">タップして操作</small>
+      </div>
+    `;
+  }).join('');
 }
 
 // 盤面を更新する
@@ -185,7 +207,8 @@ function renderBoard() {
 }
 
 // カードの移動先を選ぶ
-function moveCard(from, index) {
+
+function cardAction(from, index) {
   const zones = {
     hand,
     field,
@@ -198,6 +221,36 @@ function moveCard(from, index) {
   const source = zones[from];
   if (!source || !source[index]) return;
 
+  const choice = prompt(
+    'カード操作を選んでね\n' +
+    '1：移動する\n' +
+    '2：横向き・縦向きを切り替える\n' +
+    '3：表向き・裏向きを切り替える'
+  );
+
+  if (choice === null) return;
+
+  const card = source[index];
+
+  if (choice === '2') {
+    card._tapped = !card._tapped;
+    renderBoard();
+    toast(card.name + ' の向きを変更');
+    return;
+  }
+
+  if (choice === '3') {
+    card._faceDown = !card._faceDown;
+    renderBoard();
+    toast('表裏を変更しました');
+    return;
+  }
+
+  if (choice !== '1') {
+    toast('1〜3の数字を入力してね');
+    return;
+  }
+
   const destinations = [
     ['1', '手札', 'hand'],
     ['2', '戦場', 'field'],
@@ -208,14 +261,14 @@ function moveCard(from, index) {
     ['7', '山札の上', 'drawPile']
   ];
 
-  const choice = prompt(
-    'カードの移動先を選んでね\n' +
+  const moveChoice = prompt(
+    '移動先を選んでね\n' +
     destinations.map(x => x[0] + '：' + x[1]).join('\n')
   );
 
-  if (choice === null) return;
+  if (moveChoice === null) return;
 
-  const destination = destinations.find(x => x[0] === choice);
+  const destination = destinations.find(x => x[0] === moveChoice);
 
   if (!destination) {
     toast('1〜7の数字を入力してね');
@@ -227,17 +280,19 @@ function moveCard(from, index) {
     return;
   }
 
-  const card = source.splice(index, 1)[0];
+  const movedCard = source.splice(index, 1)[0];
 
   if (destination[2] === 'drawPile') {
-    drawPile.push(card);
+    drawPile.push(movedCard);
   } else {
-    zones[destination[2]].push(card);
+    zones[destination[2]].push(movedCard);
   }
 
   renderBoard();
-  toast(card.name + ' を' + destination[1] + 'へ移動');
+  toast(movedCard.name + ' を' + destination[1] + 'へ移動');
 }
+
+
 
 function createRoom() {
   let id = Math.random().toString(36).slice(2, 8).toUpperCase();
