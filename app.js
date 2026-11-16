@@ -210,44 +210,34 @@ function renderBoard() {
 
 function cardAction(from, index) {
   const zones = {
-    hand,
-    field,
-    guardian,
-    mana,
-    haikei,
-    grave
+    hand, field, guardian, mana, haikei, grave
   };
 
   const source = zones[from];
   if (!source || !source[index]) return;
 
-  const choice = prompt(
-    'カード操作を選んでね\n' +
-    '1：移動する\n' +
-    '2：横向き・縦向きを切り替える\n' +
-    '3：表向き・裏向きを切り替える'
-  );
-
-  if (choice === null) return;
-
   const card = source[index];
 
-  if (choice === '2') {
+  const action = confirm(
+    card.name +
+    '\n\nOK：向きを変更\nキャンセル：次の操作へ'
+  );
+
+  if (action) {
     card._tapped = !card._tapped;
     renderBoard();
-    toast(card.name + ' の向きを変更');
+    toast('カードの向きを変更したよ');
     return;
   }
 
-  if (choice === '3') {
+  const face = confirm(
+    '表向き・裏向きを変更する？\n\nOK：変更する\nキャンセル：移動する'
+  );
+
+  if (face) {
     card._faceDown = !card._faceDown;
     renderBoard();
-    toast('表裏を変更しました');
-    return;
-  }
-
-  if (choice !== '1') {
-    toast('1〜3の数字を入力してね');
+    toast('カードの表裏を変更したよ');
     return;
   }
 
@@ -262,18 +252,13 @@ function cardAction(from, index) {
   ];
 
   const moveChoice = prompt(
-    '移動先を選んでね\n' +
     destinations.map(x => x[0] + '：' + x[1]).join('\n')
   );
 
   if (moveChoice === null) return;
 
   const destination = destinations.find(x => x[0] === moveChoice);
-
-  if (!destination) {
-    toast('1〜7の数字を入力してね');
-    return;
-  }
+  if (!destination) return;
 
   if (destination[2] === from) {
     toast('同じゾーンです');
@@ -291,7 +276,6 @@ function cardAction(from, index) {
   renderBoard();
   toast(movedCard.name + ' を' + destination[1] + 'へ移動');
 }
-
 
 
 function createRoom() {
