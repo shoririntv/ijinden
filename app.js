@@ -11,7 +11,7 @@ let grave = [];
 let drawPile = [];
 
 let selectedCard = null;
-
+let turn = 1;
 fetch('cards.json')
   .then(r => r.json())
   .then(d => {
