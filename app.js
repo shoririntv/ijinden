@@ -40,7 +40,7 @@ function esc(s) {
 function cardHTML(c, btn = '') {
   const image = c.name === '徳川家康'
     ? `<img
-        src="images/tokugawa-ieyasu.png"
+        src="images/tokugawa-ieyasu.PNG"
         alt="${esc(c.name)}"
         style="width:100%;height:auto;display:block;object-fit:contain;"
       >`
