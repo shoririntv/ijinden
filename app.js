@@ -61,6 +61,117 @@ function cardHTML(c, btn = '') {
   </article>`;
 }
 
+function cardImageHTML(c) {
+  if (c.name === '徳川家康') {
+    return `<img
+      src="images/tokugawa-ieyasu.PNG"
+      alt="${esc(c.name)}"
+      style="
+        width:100%;
+        display:block;
+        border-radius:6px;
+        object-fit:contain;
+      "
+    >`;
+  }
+
+function showCardDetailsForCard(card) {
+  if (!card) return;
+
+  let modal = document.getElementById('cardDetailModal');
+
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'cardDetailModal';
+    document.body.appendChild(modal);
+  }
+
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:#000c;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      background:#1b2a38;
+      color:white;
+      border-radius:14px;
+      padding:18px;
+      width:100%;
+      max-width:400px;
+      max-height:90vh;
+      overflow-y:auto;
+      box-sizing:border-box;
+    ">
+      <h2 style="text-align:center;">カード詳細</h2>
+
+      <div style="width:100%;max-width:260px;margin:0 auto;">
+        ${cardImageHTML(card)}
+      </div>
+
+      <h3>${esc(card.name)}</h3>
+      <p>収録：${esc(card.set)}弾・${esc(card.rarity)}</p>
+      <p>色：${esc(card.color)}</p>
+      <p>レベル：${esc(card.level)}</p>
+      <p>パワー：${esc(card.power)}</p>
+      <p>特性：${esc(card.traits)}</p>
+
+      <hr>
+
+      <h3>カード効果</h3>
+      <p style="white-space:pre-wrap;line-height:1.7;">
+        ${esc(card.text)}
+      </p>
+
+      ${card.legacy ? `
+        <hr>
+        <h3>遺業能力</h3>
+        <p style="white-space:pre-wrap;line-height:1.7;">
+          ${esc(card.legacy)}
+        </p>
+      ` : ''}
+
+      <button id="closeCardDetail" style="width:100%;padding:14px;margin-top:12px;">
+        閉じる
+      </button>
+    </div>
+  `;
+
+  document.getElementById('closeCardDetail').onclick = () => {
+    modal.remove();
+  };
+}
+
+function openLibraryCardDetails(index) {
+  showCardDetailsForCard(cards[index]);
+}
+
+function openDeckCardDetails(index) {
+  const name = deck[index];
+  const card = cards.find(c => c.name === name);
+  showCardDetailsForCard(card);
+}
+
+  return `<div style="
+    width:100%;
+    aspect-ratio:5/7;
+    background:#34485a;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+    font-size:13px;
+  ">画像準備中</div>`;
+}
+
+
 
 function renderCards() {
   let q = (document.getElementById('q')?.value || '').toLowerCase();
@@ -76,10 +187,34 @@ function renderCards() {
   document.getElementById('hits').textContent = arr.length + '件';
 
   document.getElementById('cardlist').innerHTML =
-    arr.slice(0, 160).map(c =>
-      cardHTML(c, `<button onclick="addDeck('${esc(c.name)}')">デッキに追加</button>`)
-    ).join('');
+    arr.slice(0, 160).map(c => {
+      const index = cards.indexOf(c);
+
+      return `
+        <div style="
+          width:120px;
+          margin:8px;
+          display:inline-block;
+          vertical-align:top;
+        ">
+          <div
+            onclick="openLibraryCardDetails(${index})"
+            style="cursor:pointer;"
+          >
+            ${cardImageHTML(c)}
+          </div>
+
+          <button
+            onclick="addDeck('${esc(c.name)}')"
+            style="width:100%;"
+          >
+            デッキに追加
+          </button>
+        </div>
+      `;
+    }).join('');
 }
+
 
 function addDeck(name) {
   deck.push(name);
@@ -87,16 +222,39 @@ function addDeck(name) {
   toast(name + ' を追加');
 }
 
+
 function renderDeck() {
   document.getElementById('deckcount').textContent = deck.length;
 
   document.getElementById('decklist').innerHTML = deck.map((n, i) => {
     let c = cards.find(x => x.name === n);
-    return c ? cardHTML(c,
-      `<button class="secondary" onclick="removeDeck(${i})">取り除く</button>`
-    ) : '';
+
+    return c ? `
+      <div style="
+        width:120px;
+        margin:8px;
+        display:inline-block;
+        vertical-align:top;
+      ">
+        <div
+          onclick="openDeckCardDetails(${i})"
+          style="cursor:pointer;"
+        >
+          ${cardImageHTML(c)}
+        </div>
+
+        <button
+          class="secondary"
+          onclick="removeDeck(${i})"
+          style="width:100%;"
+        >
+          取り除く
+        </button>
+      </div>
+    ` : '';
   }).join('');
 }
+
 
 function removeDeck(i) {
   deck.splice(i, 1);
