@@ -72,10 +72,25 @@ function cardImageHTML(c) {
         border-radius:6px;
         object-fit:contain;
       "
+      
     >`;
   }
 
+  return `<div style="
+    width:100%;
+    aspect-ratio:5/7;
+    background:#34485a;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+    font-size:13px;
+  ">画像準備中</div>`;
+}
+
 function showCardDetailsForCard(card) {
+
   if (!card) return;
 
   let modal = document.getElementById('cardDetailModal');
