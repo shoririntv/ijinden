@@ -178,31 +178,54 @@ function turnEnd() {
 
 // カードを各ゾーンに表示する
 
+
 function renderZone(zoneName, elementId, cardsInZone) {
   const element = document.getElementById(elementId);
 
   element.innerHTML = cardsInZone.map((c, i) => {
+    const image = c.name === '徳川家康'
+      ? 'images/tokugawa-ieyasu.PNG'
+      : '';
+
     const cardView = c._faceDown
-      ? `<article class="card" style="background:#34485a;color:white;justify-content:center;align-items:center">
-           <b>イジンデン</b>
-           <small>裏向き</small>
-         </article>`
-      : cardHTML(c);
+      ? `<div style="
+           width:100%;
+           aspect-ratio:5/7;
+           background:#34485a;
+           color:white;
+           display:flex;
+           align-items:center;
+           justify-content:center;
+           border-radius:6px;
+         ">イジンデン</div>`
+      : image
+        ? `<img src="${image}" alt="${esc(c.name)}" style="
+             width:100%;
+             display:block;
+             border-radius:6px;
+           ">`
+        : `<div class="card" style="width:100%;box-sizing:border-box;">
+             <b>${esc(c.name)}</b>
+             <small>画像準備中</small>
+           </div>`;
 
     return `
       <div style="
         width:120px;
         cursor:pointer;
-        transform:rotate(${c._tapped ? 90 : 0}deg);
-        transform-origin:center;
         margin:8px;
       " onclick="cardAction('${zoneName}',${i})">
-        ${cardView}
-        <small style="color:var(--muted)">タップして操作</small>
+        <div style="
+          transform:rotate(${c._tapped ? 90 : 0}deg);
+          transform-origin:center;
+        ">
+          ${cardView}
+        </div>
       </div>
     `;
   }).join('');
 }
+
 
 // 盤面を更新する
 function renderBoard() {
@@ -278,19 +301,25 @@ function renderCardMenu() {
       <button id="faceButton" style="width:100%;padding:13px;margin:5px 0;">
         ${card._faceDown ? '表向きにする' : '裏向きにする'}
       </button>
-      <button id="moveButton" style="width:100%;padding:13px;margin:5px 0;">
-        ゾーン移動
-      </button>
-      <button id="closeButton" style="width:100%;padding:13px;margin:5px 0;">
-        閉じる
-      </button>
+      
+<button id="moveButton" style="width:100%;padding:13px;margin:5px 0;">
+  カード移動
+</button>
+<button id="detailButton" style="width:100%;padding:13px;margin:5px 0;">
+  カード詳細
+</button>
+<button id="closeButton" style="width:100%;padding:13px;margin:5px 0;">
+  閉じる
+</button>
+
     </div>
   `;
 
   document.getElementById('tapButton').onclick = toggleCardTap;
   document.getElementById('faceButton').onclick = toggleCardFace;
   document.getElementById('moveButton').onclick = showMoveChoices;
-  document.getElementById('closeButton').onclick = closeCardMenu;
+document.getElementById('detailButton').onclick = showCardDetails;
+document.getElementById('closeButton').onclick = closeCardMenu;
 }
 
 function toggleCardTap() {
