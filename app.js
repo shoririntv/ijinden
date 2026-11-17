@@ -1,7 +1,7 @@
 
 let cards = [];
 let deck = JSON.parse(localStorage.getItem('ijindenDeck') || '[]');
-
+let turn = 1;
 let hand = [];
 let field = [];
 let guardian = [];
