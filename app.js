@@ -207,8 +207,8 @@ function renderCards() {
 
       return `
         <div style="
-          width:120px;
-          margin:8px;
+          width:90px;
+          margin:3px;
           display:inline-block;
           vertical-align:top;
         ">
@@ -246,8 +246,8 @@ function renderDeck() {
 
     return c ? `
       <div style="
-        width:120px;
-        margin:8px;
+        width:90px;
+        margin:3px;
         display:inline-block;
         vertical-align:top;
       ">
