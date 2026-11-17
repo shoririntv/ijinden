@@ -36,8 +36,18 @@ function esc(s) {
   }[c]));
 }
 
+
 function cardHTML(c, btn = '') {
+  const image = c.name === '徳川家康'
+    ? `<img
+        src="images/tokugawa-ieyasu.png"
+        alt="${esc(c.name)}"
+        style="width:100%;height:auto;display:block;object-fit:contain;"
+      >`
+    : '';
+
   return `<article class="card">
+    ${image}
     <small>${esc(c.set)}弾・${esc(c.rarity)}・${esc(c.color)}</small>
     <b>${esc(c.name)}</b>
     <div>
@@ -50,6 +60,7 @@ function cardHTML(c, btn = '') {
     ${btn}
   </article>`;
 }
+
 
 function renderCards() {
   let q = (document.getElementById('q')?.value || '').toLowerCase();
