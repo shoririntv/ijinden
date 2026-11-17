@@ -399,6 +399,82 @@ function closeCardMenu() {
   selectedCard = null;
 }
 
+function showCardDetails() {
+  const zones = getZones();
+  const card = zones[selectedCard.from][selectedCard.index];
+
+  if (!card) return;
+
+  const menu = document.getElementById('cardMenu');
+
+  const image = card.name === '徳川家康'
+    ? `<img
+        src="images/tokugawa-ieyasu.PNG"
+        alt="${esc(card.name)}"
+        style="width:100%;max-width:260px;display:block;margin:0 auto 16px;"
+      >`
+    : `<div style="
+        background:#34485a;
+        padding:30px;
+        text-align:center;
+        border-radius:8px;
+        margin-bottom:16px;
+      ">画像準備中</div>`;
+
+  menu.innerHTML = `
+    <div style="
+      background:#1b2a38;
+      color:white;
+      border:1px solid #526579;
+      border-radius:14px;
+      padding:20px;
+      width:100%;
+      max-width:400px;
+      max-height:85vh;
+      overflow-y:auto;
+      box-sizing:border-box;
+    ">
+      <h2 style="text-align:center;">カード詳細</h2>
+
+      ${image}
+
+      <h3>${esc(card.name)}</h3>
+
+      <p>収録：${esc(card.set)}弾・${esc(card.rarity)}</p>
+      <p>色：${esc(card.color)}</p>
+      <p>レベル：${esc(card.level)}</p>
+      <p>パワー：${esc(card.power)}</p>
+      <p>特性：${esc(card.traits)}</p>
+
+      <hr>
+
+      <h3>カード効果</h3>
+      <p style="white-space:pre-wrap;line-height:1.7;">
+        ${esc(card.text)}
+      </p>
+
+      ${card.legacy ? `
+        <hr>
+        <h3>遺業能力</h3>
+        <p style="white-space:pre-wrap;line-height:1.7;">
+          ${esc(card.legacy)}
+        </p>
+      ` : ''}
+
+      <button id="backToMenu" style="width:100%;padding:13px;margin-top:12px;">
+        操作メニューに戻る
+      </button>
+
+      <button id="detailClose" style="width:100%;padding:13px;margin-top:8px;">
+        閉じる
+      </button>
+    </div>
+  `;
+
+  document.getElementById('backToMenu').onclick = renderCardMenu;
+  document.getElementById('detailClose').onclick = closeCardMenu;
+}
+
 
 
 function createRoom() {
