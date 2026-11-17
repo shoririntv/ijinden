@@ -207,8 +207,8 @@ function renderCards() {
 
       return `
         <div style="
-          width:70px;
-          margin:2px;
+          width:90px;
+          margin:3px;
           display:inline-block;
           vertical-align:top;
         ">
@@ -246,8 +246,8 @@ function renderDeck() {
 
     return c ? `
       <div style="
-        width:70px;
-        margin:2px;
+        width:90px;
+        margin:3px;
         display:inline-block;
         vertical-align:top;
       ">
@@ -384,9 +384,9 @@ function renderZone(zoneName, elementId, cardsInZone) {
 
     return `
       <div style="
-        width:70px;
+        width:90px;
         cursor:pointer;
-        margin:2px;
+        margin:3px;
       " onclick="cardAction('${zoneName}',${i})">
         <div style="
           transform:rotate(${c._tapped ? 90 : 0}deg);
