@@ -384,9 +384,9 @@ function renderZone(zoneName, elementId, cardsInZone) {
 
     return `
       <div style="
-        width:120px;
+        width:70px;
         cursor:pointer;
-        margin:8px;
+        margin:2px;
       " onclick="cardAction('${zoneName}',${i})">
         <div style="
           transform:rotate(${c._tapped ? 90 : 0}deg);
